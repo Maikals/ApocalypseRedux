@@ -1,8 +1,8 @@
 # For developers.
 
 # Uncomment the line for your platform to link the Dummy player to the executable
-#DUMMY_OBJ = AIDummy-Linux32bits.o
-DUMMY_OBJ = AIDummy-Linux64bits.o
+DUMMY_OBJ = AIDummy-Linux32bits.o
+#DUMMY_OBJ = AIDummy-Linux64bits.o
 
 # Add here any extra .o player files you want to link to the executable
 EXTRA_OBJS = 

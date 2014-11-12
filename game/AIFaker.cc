@@ -49,7 +49,7 @@ struct PLAYER_NAME : public Player {
   	if (valid(x,y)) {
   		if ((que(x,y) == GESPA or que(x,y) == BOSC) and not m[x][y].second) {
   			q.push(Posicio(x,y));
-  			m[x][y].first = d+1;
+  			if (m[x][y].first == 0) m[x][y].first = d+1;
   		}
   	}
   }
