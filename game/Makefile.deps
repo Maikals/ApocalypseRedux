@@ -1,4 +1,5 @@
 AIDemo.o: AIDemo.cc Player.hh Utils.hh Board.hh Action.hh Registry.hh
+AIFaker.o: AIFaker.cc Player.hh Utils.hh Board.hh Action.hh Registry.hh
 AINull.o: AINull.cc Player.hh Utils.hh Board.hh Action.hh Registry.hh
 Action.o: Action.cc Action.hh Utils.hh Board.hh
 Board.o: Board.cc Board.hh Utils.hh Action.hh

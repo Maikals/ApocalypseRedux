@@ -8,13 +8,15 @@ using namespace std;
  * Escriu el nom * del teu jugador i guarda 
  * aquest fitxer amb el nom AI*.cc
  */
-#define PLAYER_NAME Demo
+#define PLAYER_NAME Faker
 
 
 /**
  * Podeu declarar constants aquí
  */
 
+const int CAOTIC = 1;
+const int CICLIC = 2;
 
 const int X[8] = { 1, 1, 0, -1, -1, -1,  0,  1 };
 const int Y[8] = { 0, 1, 1,  1,  0, -1, -1, -1 };
@@ -38,40 +40,82 @@ struct PLAYER_NAME : public Player {
    */     
 
   typedef vector<int> VE;
+  typedef vector<pair<int, bool> > Fila;
+  typedef vector<Fila> Mapa;
+
+  MEE personalitat; // Guarda la personalitat dels soldats entre torns.
+
+  void prova(Mapa &m, int x, int y, queue <Posicio>& q, int d) {
+  	if (valid(x,y)) {
+  		if ((que(x,y) == GESPA or que(x,y) == BOSC) and not m[x][y].second) {
+  			q.push(Posicio(x,y));
+  			m[x][y].first = d+1;
+  		}
+  	}
+  }
+
+  void moure(int id, Mapa& m, Posicio& p){
+  	/*cerr << "x: " << p.x << " p.y " << p.y << endl;
+  	for (int i = 0; i < MAX; ++i) {
+  		for (int j = 0; j < MAX; ++j) cerr << m[i][j].first << " ";
+  		cerr << endl;
+  	}*/
+  	while (m[p.x][p.y].first != 1) {
+  		bool mogut = false;
+  		for (int i = 0; i < 8 and not mogut; ++i) {
+  			int xx = p.x + X[i];
+		    int yy = p.y + Y[i];
+		    if (m[xx][yy].first == m[p.x][p.y].first-1) {
+		    	mogut = true;
+		    	p.x = xx;
+		    	p.y = yy;
+		    }
+  		}
+  	}
+  	ordena_soldat(id, p.x, p.y);
+  }
 
   void juga_soldat(int equip, int id) {
+    Mapa m (MAX, Fila(MAX));
+    for (int i = 0; i < MAX; ++i) {
+    	for (int j = 0; j < MAX; ++j) {
+    		m[i][j].first = 0;
+    		m[i][j].second = false;
+    	}
+    }
+    queue<Posicio> q;
     Info in = dades(id);
     int x = in.pos.x;
     int y = in.pos.y;
-    for (int i = 0; i < 8; ++i) {
-      int xx = x + X[i];
-      int yy = y + Y[i];
-      if (xx >= 0 and xx < MAX and yy >= 0 and yy < MAX) {
-	int id2 = quin_soldat(xx, yy);
-	// Si tenim un enemic al costat, l'ataquem.
-	if (id2 and dades(id2).equip != equip) {
-	  ordena_soldat(id, xx, yy);
-	  return;
-	}
-      }
+    q.push(Posicio(x,y));
+   // cerr << "posicio inicial " << x << " " << y << endl;
+    while (not q.empty()) {
+    	Posicio p = q.front();
+    	q.pop();
+    	if (de_qui_post(p.x,p.y) != 0 and de_qui_post(p.x,p.y) != equip) {
+    //		cerr << "post a " << p.x << " " << p.y << " i distancia " << m[p.x][p.y].first << endl;
+    		moure(id, m, p);
+    		return;
+    	}
+    	else if (not m[p.x][p.y].second) {
+    		m[p.x][p.y].second = true;
+    		int d = m[p.x][p.y].first;
+		    for (int i = 0; i < 8; ++i) {
+		      int xx = p.x + X[i];
+		      int yy = p.y + Y[i];
+		      /*if (valid(xx,yy)) {
+				int id2 = quin_soldat(xx, yy);
+				// Si tenim un enemic al costat, l'ataquem.
+				if (id2 and dades(id2).equip != equip) {
+				  ordena_soldat(id, xx, yy);
+				  return;
+				}
+				else {*/
+					prova(m, xx, yy, q, d);
+				//}
+	    	}
+	    }
     }
-
-    int xx, yy;
-    if (pers == CICLIC) {
-      int torn = quin_torn()/5;
-      int incx = torn%4 - 1;
-      if (incx == 2) incx = 0;
-      int incy = (torn + 1)%4 - 1;
-      if (incy == 2) incy = 0;
-      xx = x + incx;
-      yy = y + incy;
-    }
-    else {
-      xx = x + uniforme(-1, 1);
-      yy = y + uniforme(-1, 1);
-    }
-    if (xx >= 0 and xx < MAX and yy >= 0 and yy < MAX)
-      ordena_soldat(id, xx, yy);
   }
 
 
