@@ -45,7 +45,7 @@ struct PLAYER_NAME : public Player {
 
   MEE personalitat; // Guarda la personalitat dels soldats entre torns.
 
-  void prova(Mapa &m, int x, int y, queue <Posicio>& q, int d) {
+  void prova(Mapa &m, int x, int y, queue <Posicio>& q, int d, int equip) {
   	if (valid(x,y)) {
   		if ((que(x,y) == GESPA or que(x,y) == BOSC) and not m[x][y].second) {
   			q.push(Posicio(x,y));
@@ -76,6 +76,21 @@ struct PLAYER_NAME : public Player {
   }
 
   void juga_soldat(int equip, int id) {
+    Info in = dades(id);
+    int x = in.pos.x;
+    int y = in.pos.y;
+    for (int i = 0; i < 8; ++i) {
+      int xx = x + X[i];
+      int yy = y + Y[i];
+      if (valid(xx,yy)) {
+		int id2 = quin_soldat(xx, yy);
+		// Si tenim un enemic al costat, l'ataquem.
+		if (id2 and dades(id2).equip != equip) {
+		  ordena_soldat(id, xx, yy);
+		  return;
+		}
+  	  }
+  	}
     Mapa m (MAX, Fila(MAX));
     for (int i = 0; i < MAX; ++i) {
     	for (int j = 0; j < MAX; ++j) {
@@ -84,9 +99,6 @@ struct PLAYER_NAME : public Player {
     	}
     }
     queue<Posicio> q;
-    Info in = dades(id);
-    int x = in.pos.x;
-    int y = in.pos.y;
     q.push(Posicio(x,y));
    // cerr << "posicio inicial " << x << " " << y << endl;
     while (not q.empty()) {
@@ -103,16 +115,8 @@ struct PLAYER_NAME : public Player {
 		    for (int i = 0; i < 8; ++i) {
 		      int xx = p.x + X[i];
 		      int yy = p.y + Y[i];
-		      /*if (valid(xx,yy)) {
-				int id2 = quin_soldat(xx, yy);
-				// Si tenim un enemic al costat, l'ataquem.
-				if (id2 and dades(id2).equip != equip) {
-				  ordena_soldat(id, xx, yy);
-				  return;
-				}
-				else {*/
-					prova(m, xx, yy, q, d);
-				//}
+			  prova(m, xx, yy, q, d, equip);
+
 	    	}
 	    }
     }
