@@ -74,8 +74,8 @@ struct PLAYER_NAME : public Player {
     if (m[p.x][p.y].dir == "O") ordena_soldat(id, in.pos.x, in.pos.y-1);
     if (m[p.x][p.y].dir == "NO") ordena_soldat(id, in.pos.x-1, in.pos.y-1);
     if (m[p.x][p.y].dir == "NE") ordena_soldat(id, in.pos.x-1, in.pos.y+1);
-    if (m[p.x][p.y].dir == "SO") ordena_soldat(id, in.pos.x+1, in.pos.y+1);
-    if (m[p.x][p.y].dir == "SE") ordena_soldat(id, in.pos.x+1, in.pos.y-1);
+    if (m[p.x][p.y].dir == "SO") ordena_soldat(id, in.pos.x+1, in.pos.y-1);
+    if (m[p.x][p.y].dir == "SE") ordena_soldat(id, in.pos.x+1, in.pos.y+1);
   }
 
   void juga_soldat(int equip, int id) {
@@ -125,7 +125,7 @@ struct PLAYER_NAME : public Player {
 		    for (int i = 0; i < 8; ++i) {
 		      int xx = p.x + X[i];
 		      int yy = p.y + Y[i];
-			  prova(m, xx, yy, q, d, equip, dir);
+			   prova(m, xx, yy, q, d, equip, dir);
 
 	    	}
 	    }
