@@ -54,9 +54,11 @@ struct PLAYER_NAME : public Player {
   void prova(Mapa &m, int x, int y, queue <Posicio>& q, int d, int equip, string dir) {
   	if (valid(x,y)) {
   		if ((que(x,y) == GESPA or que(x,y) == BOSC) and not m[x][y].v) {
-  			q.push(Posicio(x,y));
-  			m[x][y].d = d+1;
-        if (m[x][y].dir == " ") m[x][y].dir = dir;
+        if ((quin_soldat(x,y) != 0 and dades(quin_soldat(x,y)).equip != equip) or (not quin_soldat(x,y))) {
+    			q.push(Posicio(x,y));
+    			m[x][y].d = d+1;
+          if (m[x][y].dir == " ") m[x][y].dir = dir;
+        }
   		}
   	}
   }
