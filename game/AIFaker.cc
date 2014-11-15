@@ -15,7 +15,7 @@ using namespace std;
  * Podeu declarar constants aquí
  */
 
-const int CAOTIC = 1;
+const int CAOTIC = 2;
 const int CICLIC = 2;
 
 const int X[8] = { 1, 1, 0, -1, -1, -1,  0,  1 };
@@ -39,40 +39,43 @@ struct PLAYER_NAME : public Player {
    * Els atributs dels vostres jugadors es poden definir aquí.
    */     
 
+  struct bfs {
+    string dir;
+    int d;
+    bool v;
+  };
+
   typedef vector<int> VE;
-  typedef vector<pair<int, bool> > Fila;
+  typedef vector<bfs> Fila;
   typedef vector<Fila> Mapa;
 
   MEE personalitat; // Guarda la personalitat dels soldats entre torns.
 
-  void prova(Mapa &m, int x, int y, queue <Posicio>& q, int d, int equip) {
+  void prova(Mapa &m, int x, int y, queue <Posicio>& q, int d, int equip, string dir) {
   	if (valid(x,y)) {
-  		if ((que(x,y) == GESPA or que(x,y) == BOSC) and not m[x][y].second) {
+  		if ((que(x,y) == GESPA or que(x,y) == BOSC) and not m[x][y].v) {
   			q.push(Posicio(x,y));
-  			if (m[x][y].first == 0) m[x][y].first = d+1;
+  			m[x][y].d = d+1;
+        if (m[x][y].dir == " ") m[x][y].dir = dir;
   		}
   	}
   }
-
+  
   void moure(int id, Mapa& m, Posicio& p){
   	/*cerr << "x: " << p.x << " p.y " << p.y << endl;
   	for (int i = 0; i < MAX; ++i) {
   		for (int j = 0; j < MAX; ++j) cerr << m[i][j].first << " ";
   		cerr << endl;
   	}*/
-  	while (m[p.x][p.y].first != 1) {
-  		bool mogut = false;
-  		for (int i = 0; i < 8 and not mogut; ++i) {
-  			int xx = p.x + X[i];
-		    int yy = p.y + Y[i];
-		    if (m[xx][yy].first == m[p.x][p.y].first-1) {
-		    	mogut = true;
-		    	p.x = xx;
-		    	p.y = yy;
-		    }
-  		}
-  	}
-  	ordena_soldat(id, p.x, p.y);
+    Info in = dades(id);
+  	if (m[p.x][p.y].dir == "N")	ordena_soldat(id, in.pos.x-1, in.pos.y);
+    if (m[p.x][p.y].dir == "E") ordena_soldat(id, in.pos.x, in.pos.y+1);
+    if (m[p.x][p.y].dir == "S") ordena_soldat(id, in.pos.x+1, in.pos.y);
+    if (m[p.x][p.y].dir == "O") ordena_soldat(id, in.pos.x, in.pos.y-1);
+    if (m[p.x][p.y].dir == "NO") ordena_soldat(id, in.pos.x-1, in.pos.y-1);
+    if (m[p.x][p.y].dir == "NE") ordena_soldat(id, in.pos.x-1, in.pos.y+1);
+    if (m[p.x][p.y].dir == "SO") ordena_soldat(id, in.pos.x+1, in.pos.y+1);
+    if (m[p.x][p.y].dir == "SE") ordena_soldat(id, in.pos.x+1, in.pos.y-1);
   }
 
   void juga_soldat(int equip, int id) {
@@ -83,39 +86,46 @@ struct PLAYER_NAME : public Player {
       int xx = x + X[i];
       int yy = y + Y[i];
       if (valid(xx,yy)) {
-		int id2 = quin_soldat(xx, yy);
-		// Si tenim un enemic al costat, l'ataquem.
-		if (id2 and dades(id2).equip != equip) {
-		  ordena_soldat(id, xx, yy);
-		  return;
-		}
+    		int id2 = quin_soldat(xx, yy);
+    		// Si tenim un enemic al costat, l'ataquem.
+    		if (id2 and dades(id2).equip != equip) {
+    		  ordena_soldat(id, xx, yy);
+    		  return;
+    		}
   	  }
   	}
     Mapa m (MAX, Fila(MAX));
     for (int i = 0; i < MAX; ++i) {
     	for (int j = 0; j < MAX; ++j) {
-    		m[i][j].first = 0;
-    		m[i][j].second = false;
+    		m[i][j].d = 0;
+    		m[i][j].v = false;
+        m[i][j].dir = " ";
     	}
     }
     queue<Posicio> q;
-    q.push(Posicio(x,y));
-   // cerr << "posicio inicial " << x << " " << y << endl;
+    prova(m, x-1, y, q, 0, equip, "N");
+    prova(m, x, y+1, q, 0, equip, "E");
+    prova(m, x+1, y, q, 0, equip, "S");
+    prova(m, x, y-1, q, 0, equip, "O");
+    prova(m, x-1, y-1, q, 0, equip, "NO");
+    prova(m, x-1, y+1, q, 0, equip, "NE");
+    prova(m, x+1, y+1, q, 0, equip, "SE");
+    prova(m, x+1, y-1, q, 0, equip, "SO");
     while (not q.empty()) {
     	Posicio p = q.front();
     	q.pop();
     	if (de_qui_post(p.x,p.y) != 0 and de_qui_post(p.x,p.y) != equip) {
-    //		cerr << "post a " << p.x << " " << p.y << " i distancia " << m[p.x][p.y].first << endl;
-    		moure(id, m, p);
+    	moure(id, m, p);
     		return;
     	}
-    	else if (not m[p.x][p.y].second) {
-    		m[p.x][p.y].second = true;
-    		int d = m[p.x][p.y].first;
+    	else if (not m[p.x][p.y].v) {
+    		m[p.x][p.y].v = true;
+    		int d = m[p.x][p.y].d;
+        string dir = m[p.x][p.y].dir;
 		    for (int i = 0; i < 8; ++i) {
 		      int xx = p.x + X[i];
 		      int yy = p.y + Y[i];
-			  prova(m, xx, yy, q, d, equip);
+			  prova(m, xx, yy, q, d, equip, dir);
 
 	    	}
 	    }
