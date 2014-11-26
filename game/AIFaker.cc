@@ -54,11 +54,9 @@ struct PLAYER_NAME : public Player {
   void prova(Mapa &m, int x, int y, queue <Posicio>& q, int d, int equip, string dir) {
   	if (valid(x,y)) {
   		if ((que(x,y) == GESPA or que(x,y) == BOSC) and not m[x][y].v) {
-        if ((quin_soldat(x,y) != 0 and dades(quin_soldat(x,y)).equip != equip) or (not quin_soldat(x,y))) {
     			q.push(Posicio(x,y));
     			m[x][y].d = d+1;
           if (m[x][y].dir == " ") m[x][y].dir = dir;
-        }
   		}
   	}
   }
@@ -116,7 +114,7 @@ struct PLAYER_NAME : public Player {
     while (not q.empty()) {
     	Posicio p = q.front();
     	q.pop();
-    	if (de_qui_post(p.x,p.y) != 0 and de_qui_post(p.x,p.y) != equip) {
+    	if ((de_qui_post(p.x,p.y) != 0 and de_qui_post(p.x,p.y) != equip) or (quin_soldat(p.x,p.y) > 0 and dades(quin_soldat(p.x,p.y)).equip!=equip)) {
     	moure(id, m, p);
     		return;
     	}
@@ -166,10 +164,17 @@ struct PLAYER_NAME : public Player {
     // Obtenim les dades de l'helicòpter...
     Info in = dades(heli_id);
     // ... i intentem llencar un paracaigudista, sense ni mirar el terreny.
-    int xx = in.pos.x + uniforme(-2, 2);
-    int yy = in.pos.y + uniforme(-2, 2);
-    if (xx >= 0 and xx < MAX and yy >= 0 and yy < MAX)
-      ordena_paracaigudista(xx, yy);
+    int count = 0;
+    for (int i = -2; i < 2 and count < 4; ++i) {
+        for (int j = -2; j < 2 and count < 4; ++j) {
+          int xx = in.pos.x + i;
+          int yy = in.pos.y + j;
+          if (valid(xx, yy) and que(xx,yy) != AIGUA and quin_soldat(xx, yy) == 0 and temps_foc(xx, yy) == 0) {
+            ordena_paracaigudista(xx, yy);
+            ++count;
+          }
+      }  
+    }
   }
 
   /**
@@ -184,9 +189,8 @@ struct PLAYER_NAME : public Player {
     VE S = soldats(equip); // soldats del meu equip
 
     // si en un helicòpter escollit a l'atzar tinc paracaigudistes, en llenço un.
-    int heli_id = H[uniforme(0, H.size()-1)];
-    if (not dades(heli_id).paraca.empty()) llenca_paracaigudista(heli_id);
-
+    if (quin_torn()%2 == 0 and not dades(H[0]).paraca.empty()) llenca_paracaigudista(H[0]);
+    if (quin_torn()%2 == 1 and not dades(H[1]).paraca.empty()) llenca_paracaigudista(H[1]);
     for (int i = 0; i < (int)H.size(); ++i) juga_heli(equip, H[i]);
     for (int i = 0; i < (int)S.size(); ++i) juga_soldat(equip, S[i]);
   }
